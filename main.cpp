@@ -47,10 +47,18 @@ int main( int argc, char** argv) {
   sim.Run(t_init, -1);
   auto res = sim.Run(t_max, t_measure_interval);
 
-  std::ofstream fout("results.txt");
-  for( double r : res ) {
-    fout << r << std::endl;
-  }
+  std::ofstream fout("_output.json");
+  fout << "{\n"
+       << "  \"degree\": "    << res[0] << ",\n"
+       << "  \"strength\": "  << res[1] << ",\n"
+       << "  \"pcc_k_knn\": " << res[2] << ",\n"
+       << "  \"CC\": "        << res[3] << ",\n"
+       << "  \"pcc_Ck\": "    << res[4] << ",\n"
+       << "  \"overlap\": "   << res[5] << ",\n"
+       << "  \"pcc_Ow\": "    << res[6] << "\n"
+       << "}" << std::endl;
+  fout.flush();
+  fout.close();
   return 0;
 }
 
