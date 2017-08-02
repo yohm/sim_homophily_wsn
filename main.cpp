@@ -59,6 +59,11 @@ int main( int argc, char** argv) {
        << "}" << std::endl;
   fout.flush();
   fout.close();
+
+  std::ofstream eout("net.edg");
+  sim.PrintEdge(eout);
+  eout.close();
+
   return 0;
 }
 
