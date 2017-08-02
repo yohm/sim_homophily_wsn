@@ -99,6 +99,16 @@ void HomophilyWSN::PrintEdge( std::ofstream & fout) {
   }
 }
 
+void HomophilyWSN::PrintTraits(std::ofstream &fout) {
+  for( const Node& n : m_nodes ) {
+    for( size_t f=0; f<m_F; f++) {
+      fout << n.TraitAt(f) << ' ';
+    }
+    fout << "\n";
+  }
+  fout.flush();
+}
+
 void HomophilyWSN::ToJson( std::ostream& out ) const {
   out << "{ \"num_nodes\": " << m_nodes.size() << ",\n";
 

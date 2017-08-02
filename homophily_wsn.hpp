@@ -28,6 +28,7 @@ public:
   ~HomophilyWSN() {};
   std::array<double,NUM_OUTPUTS> Run( uint32_t tmax, long measure_interval);
   void PrintEdge( std::ofstream& fout);
+  void PrintTraits( std::ofstream& fout);
   void ToJson( std::ostream & out ) const;
   double AverageDegree();
   double AverageStrength();

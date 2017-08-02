@@ -64,6 +64,10 @@ int main( int argc, char** argv) {
   sim.PrintEdge(eout);
   eout.close();
 
+  std::ofstream tout("traits.txt");
+  sim.PrintTraits(tout);
+  tout.close();
+
   return 0;
 }
 

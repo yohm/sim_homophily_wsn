@@ -5,4 +5,5 @@ cmake_install.cmake
 *.out
 _output.json
 net.edg
+traits.txt
 
