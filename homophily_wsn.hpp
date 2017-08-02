@@ -1,5 +1,5 @@
-#ifndef WSN_ND_LD_AGING_HPP
-#define WSN_ND_LD_AGING_HPP
+#ifndef HOMOPHILY_WSN_HPP
+#define HOMOPHILY_WSN_HPP
 
 #include <omp.h>
 #include <cstdlib>
@@ -18,14 +18,14 @@
 
 
 //================================================
-class WsnNDLDAging {
+class HomophilyWSN {
 public:
   static const size_t NUM_OUTPUTS = 7;
-  WsnNDLDAging(
+  HomophilyWSN(
     uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
     double p_nd, double p_ld, double aging, double w_th
   );
-  ~WsnNDLDAging() {};
+  ~HomophilyWSN() {};
   std::array<double,NUM_OUTPUTS> Run( uint32_t tmax, long measure_interval);
   void PrintEdge( std::ofstream& fout);
   void ToJson( std::ostream & out ) const;
@@ -61,8 +61,8 @@ protected:
   Node* RandomSelectExceptForNeighbors(Node* i);
 
   // non-copyable
-  WsnNDLDAging(const WsnNDLDAging&);
-  WsnNDLDAging& operator=(const WsnNDLDAging&);
+  HomophilyWSN(const HomophilyWSN&);
+  HomophilyWSN& operator=(const HomophilyWSN&);
 
   double CalculateAverage(const std::vector<double>& vector) const;
   double PCC( const std::vector<double>& xs, const std::vector<double>& ys ) const;

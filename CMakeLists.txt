@@ -19,8 +19,8 @@ set(SOURCE_FILES
   node.hpp
   random.cpp
   random.hpp
-  wsn_nd_ld_aging.cpp
-  wsn_nd_ld_aging.hpp
+  homophily_wsn.cpp
+  homophily_wsn.hpp
   main.cpp
   )
 

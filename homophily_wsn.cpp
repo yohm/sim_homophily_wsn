@@ -1,7 +1,7 @@
 #include <cmath>
-#include "wsn_nd_ld_aging.hpp"
+#include "homophily_wsn.hpp"
 
-WsnNDLDAging::WsnNDLDAging(
+HomophilyWSN::HomophilyWSN(
   uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
   double p_nd, double p_ld, double aging, double w_th)
 : m_seed(seed), m_net_size(net_size), m_p_tri(p_tri), m_p_jump(p_jump), m_delta(delta),
@@ -22,7 +22,7 @@ WsnNDLDAging::WsnNDLDAging(
   }
 }
 
-std::array<double,WsnNDLDAging::NUM_OUTPUTS> WsnNDLDAging::Run( uint32_t t_max, long measure_interval ) {
+std::array<double,HomophilyWSN::NUM_OUTPUTS> HomophilyWSN::Run( uint32_t t_max, long measure_interval ) {
   const bool measure_time_series = (0 < measure_interval);
 
   std::array< std::vector<double>, NUM_OUTPUTS> a_v_series;
@@ -73,7 +73,7 @@ std::array<double,WsnNDLDAging::NUM_OUTPUTS> WsnNDLDAging::Run( uint32_t t_max, 
   return results;
 }
 
-void WsnNDLDAging::PrintEdge( std::ofstream & fout) {
+void HomophilyWSN::PrintEdge( std::ofstream & fout) {
   for( const Node & n : m_nodes ) {
     for( const Edge & e : n.GetEdges() ) {
       size_t i = n.GetId();
@@ -83,7 +83,7 @@ void WsnNDLDAging::PrintEdge( std::ofstream & fout) {
   }
 }
 
-void WsnNDLDAging::ToJson( std::ostream& out ) const {
+void HomophilyWSN::ToJson( std::ostream& out ) const {
   out << "{ \"num_nodes\": " << m_nodes.size() << ",\n";
 
   out << "\"links\": [\n";
@@ -101,7 +101,7 @@ void WsnNDLDAging::ToJson( std::ostream& out ) const {
   out << "]}";
 }
 
-double WsnNDLDAging::AverageDegree() {
+double HomophilyWSN::AverageDegree() {
   size_t total = 0;
   if( m_nodes.empty() ) { return 0.0; }
   for( const Node & n : m_nodes ) {
@@ -110,7 +110,7 @@ double WsnNDLDAging::AverageDegree() {
   return static_cast<double>(total) / m_nodes.size();
 }
 
-double WsnNDLDAging::AverageStrength() {
+double HomophilyWSN::AverageStrength() {
   double total = 0.0;
   if( m_nodes.empty() ) { return 0.0; }
   for( const Node & n : m_nodes ) {
@@ -119,14 +119,14 @@ double WsnNDLDAging::AverageStrength() {
   return total / m_nodes.size();
 }
 
-void WsnNDLDAging::LocalAndGlobalAttachement() {
+void HomophilyWSN::LocalAndGlobalAttachement() {
   GA();
   StrengthenEdges();
   LA();
   StrengthenEdges();
 }
 
-void WsnNDLDAging::GA() {
+void HomophilyWSN::GA() {
   // Global attachment
   int thread_num = omp_get_thread_num();
   std::vector< std::pair<Node*,Node*> > local_attachements;
@@ -151,7 +151,7 @@ void WsnNDLDAging::GA() {
   #pragma omp barrier
 }
 
-void WsnNDLDAging::LA() {
+void HomophilyWSN::LA() {
   // Local attachment
   int thread_num = omp_get_thread_num();
   std::vector< std::pair<Node*,Node*> > local_enhancements;
@@ -191,7 +191,7 @@ void WsnNDLDAging::LA() {
   #pragma omp barrier
 }
 
-void WsnNDLDAging::LinkDeletion() {
+void HomophilyWSN::LinkDeletion() {
   std::map<size_t, std::vector<size_t> > linksToRemove;
   const int thread_num = omp_get_thread_num();
 
@@ -224,7 +224,7 @@ void WsnNDLDAging::LinkDeletion() {
   }
 }
 
-void WsnNDLDAging::NodeDeletion() {
+void HomophilyWSN::NodeDeletion() {
   assert( omp_get_thread_num() == 0 );
   for( Node & n : m_nodes ) {
     if( Random::Rand01(0) < m_p_nd ) {
@@ -233,7 +233,7 @@ void WsnNDLDAging::NodeDeletion() {
   }
 }
 
-void WsnNDLDAging::DeleteNode(Node* ni) {
+void HomophilyWSN::DeleteNode(Node* ni) {
   for( const Edge& e : ni->GetEdges() ) {
     e.node->DeleteEdge(ni);
   }
@@ -241,7 +241,7 @@ void WsnNDLDAging::DeleteNode(Node* ni) {
 }
 
 
-void WsnNDLDAging::StrengthenEdges() {
+void HomophilyWSN::StrengthenEdges() {
   // strengthen edges
   // #pragma omp barrier
   #pragma omp master
@@ -278,24 +278,24 @@ void WsnNDLDAging::StrengthenEdges() {
   #pragma omp barrier
 }
 
-void WsnNDLDAging::AttachPair(Node* ni, Node* nj, std::vector< std::pair<Node*,Node*> >& attachements) {
+void HomophilyWSN::AttachPair(Node* ni, Node* nj, std::vector< std::pair<Node*,Node*> >& attachements) {
   std::pair<Node*, Node*> node_pair = (ni<nj) ? std::make_pair(ni, nj) : std::make_pair(nj, ni);
   attachements.push_back(node_pair);
 }
 
-void WsnNDLDAging::EnhancePair(Node * ni, Node* nj, std::vector< std::pair<Node*,Node*> >& enhancements) {
+void HomophilyWSN::EnhancePair(Node * ni, Node* nj, std::vector< std::pair<Node*,Node*> >& enhancements) {
   std::pair<Node*, Node*> node_pair = (ni<nj) ? std::make_pair(ni, nj) : std::make_pair(nj, ni);
   enhancements.push_back(node_pair);
 }
 
-void WsnNDLDAging::LinkAging() {
+void HomophilyWSN::LinkAging() {
   #pragma omp for schedule(static)
   for( size_t i=0; i < m_net_size; i++) {
     m_nodes[i].AgingEdge(m_aging, m_link_th);
   }
 }
 
-Node* WsnNDLDAging::RandomSelectExceptForNeighbors(Node* ni) {
+Node* HomophilyWSN::RandomSelectExceptForNeighbors(Node* ni) {
   size_t num_candidate = m_net_size - ni->Degree() - 1;
   int idx = static_cast<int>( Random::Rand01( omp_get_thread_num() ) * num_candidate );
 
@@ -315,7 +315,7 @@ Node* WsnNDLDAging::RandomSelectExceptForNeighbors(Node* ni) {
   return &m_nodes[idx];
 }
 
-double WsnNDLDAging::CalculateAverage(const std::vector<double>& vector) const {
+double HomophilyWSN::CalculateAverage(const std::vector<double>& vector) const {
   if( vector.empty() ) { return 0.0; }
   double sum = 0.0;
   for( const auto x : vector ) {
@@ -324,7 +324,7 @@ double WsnNDLDAging::CalculateAverage(const std::vector<double>& vector) const {
   return sum / vector.size();
 }
 
-double WsnNDLDAging::PCC( const std::vector<double>& xs, const std::vector<double>& ys ) const {
+double HomophilyWSN::PCC( const std::vector<double>& xs, const std::vector<double>& ys ) const {
 
   auto sum = []( const std::vector<double>& a ) {
     double ret = 0.0;
@@ -353,7 +353,7 @@ double WsnNDLDAging::PCC( const std::vector<double>& xs, const std::vector<doubl
   return numerator / denominator;
 }
 
-double WsnNDLDAging::PCC_k_knn() const {
+double HomophilyWSN::PCC_k_knn() const {
   std::vector<double> xs;
   std::vector<double> ys;
 
@@ -373,7 +373,7 @@ double WsnNDLDAging::PCC_k_knn() const {
   return PCC( xs, ys );
 }
 
-void WsnNDLDAging::CalculateLocalCC(std::vector<double> &v_local_cc) const {
+void HomophilyWSN::CalculateLocalCC(std::vector<double> &v_local_cc) const {
   v_local_cc.resize( m_net_size );
 
   for( size_t i=0; i< m_net_size; i++ ) {
@@ -381,7 +381,7 @@ void WsnNDLDAging::CalculateLocalCC(std::vector<double> &v_local_cc) const {
   }
 }
 
-std::pair<double,double> WsnNDLDAging::CC_PCC_ck() const {
+std::pair<double,double> HomophilyWSN::CC_PCC_ck() const {
   std::vector<double> v_local_cc;
   CalculateLocalCC( v_local_cc );
 
@@ -395,7 +395,7 @@ std::pair<double,double> WsnNDLDAging::CC_PCC_ck() const {
   return std::make_pair(cc, pcc_ck);
 }
 
-std::pair<double,double> WsnNDLDAging::O_PCC_ow() const {
+std::pair<double,double> HomophilyWSN::O_PCC_ow() const {
   std::vector<double> v_overlaps, v_weights;
 
   for( size_t i=0; i < m_net_size; i++ ) {
@@ -416,7 +416,7 @@ std::pair<double,double> WsnNDLDAging::O_PCC_ow() const {
   return std::make_pair( ave_o, pcc_ow );
 }
 
-double WsnNDLDAging::LocalOverlap(const Node &ni, const Node &nj) const {
+double HomophilyWSN::LocalOverlap(const Node &ni, const Node &nj) const {
   const size_t ki = ni.Degree();
   const size_t kj = nj.Degree();
   if( ki == 1 && kj == 1 ) { return 0.0; }
