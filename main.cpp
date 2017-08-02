@@ -42,7 +42,7 @@ int main( int argc, char** argv) {
             << "seed:\t" << seed << std::endl;
 
   HomophilyWSN sim(seed, net_size, p_tri, p_jump, delta,
-                   p_nd, p_ld, aging, w_th);
+                   p_nd, p_ld, aging, w_th, F, q);
   sim.Run(t_init, -1);
   auto res = sim.Run(t_max, t_measure_interval);
 

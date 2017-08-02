@@ -3,9 +3,9 @@
 
 HomophilyWSN::HomophilyWSN(
   uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
-  double p_nd, double p_ld, double aging, double w_th)
+  double p_nd, double p_ld, double aging, double w_th, long F, long q)
 : m_seed(seed), m_net_size(net_size), m_p_tri(p_tri), m_p_jump(p_jump), m_delta(delta),
-  m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th)
+  m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(q)
 {
   #pragma omp parallel
   {
@@ -14,8 +14,14 @@ HomophilyWSN::HomophilyWSN(
     {
       std::cerr << "num_threads: " << num_threads << std::endl;
       Random::Init(seed, num_threads);
+      int thread_num = omp_get_thread_num();
       for( size_t i = 0; i < m_net_size; i++) {
-        Node node(i);
+        std::vector<long> traits;
+        for( size_t f=0; f < m_F; f++) {
+          long trait = static_cast<long>(q * Random::Rand01(thread_num));
+          traits.push_back(trait);
+        }
+        Node node(i, traits);
         m_nodes.push_back( node );
       }
     }

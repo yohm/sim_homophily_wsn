@@ -24,7 +24,7 @@ public:
 //=================================================
 class Node {
 public:
-  Node(size_t id) : m_id(id) {}
+  Node(size_t id, std::vector<long> traits) : m_id(id), m_traits(traits) {};
   size_t GetId() const { return m_id; }
 
   // randomly select edge with the probability proportional to its weight
@@ -44,6 +44,7 @@ public:
   void SortEdgesByID();
 protected:
   size_t m_id;
+  std::vector<long> m_traits;
   std::vector<Edge> m_edges;
 };
 
