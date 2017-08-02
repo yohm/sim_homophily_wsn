@@ -189,22 +189,27 @@ void HomophilyWSN::LA() {
     // search first child
     Node* ni = &m_nodes[i];
     if( ni->Degree() == 0 ) { continue; }
-    Edge* first_edge = ni->EdgeSelection(NULL);
-    Node* first_child = first_edge->node;
-    EnhancePair(ni, first_child, local_enhancements);
+    Edge* e_ij = ni->EdgeSelection(NULL);
+    Node* nj = e_ij->node;
+    EnhancePair(ni, nj, local_enhancements);
 
     // search second child
-    if( first_child->Degree() == 1 ) { continue; }
-    Edge* second_edge = first_child->EdgeSelection(ni);
-    Node* second_child = second_edge->node;
-    EnhancePair(first_child, second_child, local_enhancements);
+    if( nj->Degree() == 1 ) { continue; }
+    auto shared_traits = ni->sharedTraits(nj);
+    assert( shared_traits.size() > 0 );
+    int r = (int) (shared_traits.size() * Random::Rand01(omp_get_thread_num() ));
+    size_t f = shared_traits[r];
+    Edge* e_jk = nj->EdgeSelectionSharingTrait(ni,f);
+    if( e_jk == NULL ) { continue; }
+    Node* nk = e_jk->node;
+    EnhancePair(nj, nk, local_enhancements);
 
-    // connect i and second_child with p_tri
-    if( ni->FindEdge(second_child) ) {
-      EnhancePair(ni, second_child, local_enhancements);
+    // connect i and nk with p_tri
+    if( ni->FindEdge(nk) ) {
+      EnhancePair(ni, nk, local_enhancements);
     } else {
       if( Random::Rand01(thread_num) < m_p_tri ) {
-        AttachPair(ni, second_child, local_attachements);
+        AttachPair(ni, nk, local_attachements);
       }
     }
   }

@@ -32,6 +32,7 @@ public:
   // if excluded_node is not NULL, the parent node is not included in the candidates
   // when excluded_node is NULL, the edge is selected from all the connecting edges
   Edge* EdgeSelection(Node* excluded_node);
+  Edge* EdgeSelectionSharingTrait(Node* excluded_node, size_t f);
   size_t Degree() const { return m_edges.size(); }
   double Strength() const;
   double LocalCC() const;
@@ -43,6 +44,7 @@ public:
   const std::vector<Edge>& GetEdges() const { return m_edges; }
   void ClearAll() { m_edges.clear(); }
   void SortEdgesByID();
+  std::vector<size_t> sharedTraits( const Node* n );
 protected:
   size_t m_id;
   std::vector<size_t> m_traits;

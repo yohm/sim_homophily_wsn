@@ -50,6 +50,24 @@ Edge* Node::EdgeSelection(Node* parent_node) {
   }
 }
 
+Edge* Node::EdgeSelectionSharingTrait(Node *excluded_node, size_t f) {
+  std::vector<double> v_probs;
+  double prob_sum = 0.0;
+  std::vector<Edge*> candidates;
+  for( size_t i=0; i<m_edges.size(); i++) {
+    Edge &e = m_edges[i];
+    if (e.node != excluded_node && m_traits[f] == e.node->m_traits[f]) {
+      prob_sum += m_edges[i].weight;
+      v_probs.push_back(prob_sum);
+      candidates.push_back(&e);
+    }
+  }
+  if( v_probs.empty() ) { return NULL; }
+  double r = prob_sum * Random::Rand01( omp_get_thread_num() );
+  auto found = std::upper_bound(v_probs.begin(), v_probs.end(), r);
+  return candidates[ std::distance(v_probs.begin(),found) ];
+}
+
 Edge* Node::FindEdge(Node* nj) {
   for( Edge& e : m_edges ) {
     if( e.node == nj ) { return &e; }
@@ -109,3 +127,12 @@ double Node::LocalCC() const {
   double num_pairs = k * (k-1.0) / 2.0;
   return total / num_pairs;
 }
+
+std::vector<size_t> Node::sharedTraits(const Node* n) {
+  std::vector<size_t> shared;
+  for( size_t f=0; f < m_traits.size(); f++) {
+    if( m_traits[f] == n->m_traits[f] ) { shared.push_back(f); }
+  }
+  return std::move(shared);
+}
+
