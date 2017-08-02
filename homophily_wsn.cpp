@@ -16,17 +16,27 @@ HomophilyWSN::HomophilyWSN(
       Random::Init(seed, num_threads);
       int thread_num = omp_get_thread_num();
       for( size_t i = 0; i < m_net_size; i++) {
-        std::vector<long> traits;
+        std::vector<size_t> traits;
         for( size_t f=0; f < m_F; f++) {
-          long trait = static_cast<long>(q * Random::Rand01(thread_num));
+          size_t trait = static_cast<size_t>(q * Random::Rand01(thread_num));
           traits.push_back(trait);
         }
         Node node(i, traits);
         m_nodes.push_back( node );
       }
+      ConstructMapTraitsNodes();
     }
   }
 }
+
+void HomophilyWSN::ConstructMapTraitsNodes() {
+  for( size_t i=0; i < m_net_size; i++) {
+    for( size_t f=0; f < m_F; f++) {
+      size_t t = m_nodes[i].TraitAt(f);
+      m_mapTraitsNodes[ std::make_pair(f,t) ].push_back(i);
+    }
+  }
+};
 
 std::array<double,HomophilyWSN::NUM_OUTPUTS> HomophilyWSN::Run( uint32_t t_max, long measure_interval ) {
   const bool measure_time_series = (0 < measure_interval);
@@ -144,7 +154,7 @@ void HomophilyWSN::GA() {
     double r = Random::Rand01(thread_num);
     if( ni->Degree() == 0 || r < m_p_jump ) {
       if( ni->Degree() == m_net_size - 1 ) { continue; }
-      Node* nj = RandomSelectExceptForNeighbors(ni);
+      Node* nj = RandomSelectNodeSharingTraitExcludingNeighbors(ni);
       assert( ni->FindEdge(nj) == NULL );
       AttachPair(ni, nj, local_attachements);
     }
@@ -301,24 +311,25 @@ void HomophilyWSN::LinkAging() {
   }
 }
 
-Node* HomophilyWSN::RandomSelectExceptForNeighbors(Node* ni) {
-  size_t num_candidate = m_net_size - ni->Degree() - 1;
-  int idx = static_cast<int>( Random::Rand01( omp_get_thread_num() ) * num_candidate );
-
-  std::vector<size_t> exclude_index;
+Node* HomophilyWSN::RandomSelectNodeSharingTraitExcludingNeighbors(Node *ni) {
+  std::set<size_t> candidates;
+  for( size_t f=0; f<m_F; f++) {
+    size_t t = ni->TraitAt(f);
+    const auto& v = m_mapTraitsNodes[ std::make_pair(f,t) ];
+    candidates.insert( v.begin(), v.end() );
+  }
+  candidates.erase( ni->GetId() );
   for( const Edge& e : ni->GetEdges() ) {
-    exclude_index.push_back( e.node->GetId() );
+    candidates.erase( e.node->GetId() );
   }
-  exclude_index.push_back(ni->GetId());
-  std::sort(exclude_index.begin(), exclude_index.end());
-  assert( exclude_index.size() == ni->Degree() + 1 );
 
-  for( size_t excluded : exclude_index ) {
-    if( idx >= excluded ) { idx++; }
-    else { break; }
-  }
+  if( candidates.empty() ) { return NULL; }
+  int idx = static_cast<int>( Random::Rand01( omp_get_thread_num() ) * candidates.size() );
+
   assert( idx < static_cast<int>(m_net_size) );
-  return &m_nodes[idx];
+  auto it = candidates.begin();
+  std::advance( it, idx );
+  return &m_nodes[*it];
 }
 
 double HomophilyWSN::CalculateAverage(const std::vector<double>& vector) const {

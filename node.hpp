@@ -24,8 +24,9 @@ public:
 //=================================================
 class Node {
 public:
-  Node(size_t id, std::vector<long> traits) : m_id(id), m_traits(traits) {};
+  Node(size_t id, std::vector<size_t> traits) : m_id(id), m_traits(traits) {};
   size_t GetId() const { return m_id; }
+  size_t TraitAt(size_t f) const { return m_traits[f]; }
 
   // randomly select edge with the probability proportional to its weight
   // if excluded_node is not NULL, the parent node is not included in the candidates
@@ -44,7 +45,7 @@ public:
   void SortEdgesByID();
 protected:
   size_t m_id;
-  std::vector<long> m_traits;
+  std::vector<size_t> m_traits;
   std::vector<Edge> m_edges;
 };
 

@@ -49,7 +49,9 @@ protected:
   std::vector<Node> m_nodes;
   std::vector< std::pair<Node*,Node*> > m_enhancements;
   std::vector< std::pair<Node*,Node*> > m_attachements;
+  std::map< std::pair<size_t,size_t>, std::vector<size_t> > m_mapTraitsNodes;
 
+  void ConstructMapTraitsNodes();
   void LocalAndGlobalAttachement(); // LA and GA
   void LA();
   void GA();
@@ -60,7 +62,7 @@ protected:
   void LinkAging();
   void NodeDeletion();
   void DeleteNode(Node* ni);
-  Node* RandomSelectExceptForNeighbors(Node* i);
+  Node* RandomSelectNodeSharingTraitExcludingNeighbors(Node *i);
 
   // non-copyable
   HomophilyWSN(const HomophilyWSN&);
