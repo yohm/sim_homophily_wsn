@@ -40,6 +40,7 @@ void HomophilyWSN::ConstructMapTraitsNodes() {
 
 std::array<double,HomophilyWSN::NUM_OUTPUTS> HomophilyWSN::Run( uint32_t t_max, long measure_interval ) {
   const bool measure_time_series = (0 < measure_interval);
+  std::ofstream time_out("timeseries.dat");
 
   std::array< std::vector<double>, NUM_OUTPUTS> a_v_series;
 
@@ -67,15 +68,23 @@ std::array<double,HomophilyWSN::NUM_OUTPUTS> HomophilyWSN::Run( uint32_t t_max, 
       #pragma omp master
       {
         if( measure_time_series && (t%measure_interval==0)) {
-          a_v_series[0].push_back( AverageDegree() );
-          a_v_series[1].push_back( AverageStrength() );
-          a_v_series[2].push_back( PCC_k_knn() );
+          double k = AverageDegree();
+          double s = AverageStrength();
+          double pcc_k_knn = PCC_k_knn();
           auto cc_pccck = CC_PCC_ck();
-          a_v_series[3].push_back( cc_pccck.first );
-          a_v_series[4].push_back( cc_pccck.second );
+          double cc = cc_pccck.first;
+          double pccck = cc_pccck.second;
           auto o_pcc_ow = O_PCC_ow();
-          a_v_series[5].push_back(o_pcc_ow.first);
-          a_v_series[6].push_back(o_pcc_ow.second);
+          double o = o_pcc_ow.first;
+          double pcc_ow = o_pcc_ow.second;
+          time_out << t << ' ' << k << ' ' << s << ' ' << pcc_k_knn << ' ' << cc << ' ' << pccck << ' ' << o << ' ' << pcc_ow << std::endl;
+          a_v_series[0].push_back( k );
+          a_v_series[1].push_back( s );
+          a_v_series[2].push_back( pcc_k_knn );
+          a_v_series[3].push_back( cc );
+          a_v_series[4].push_back( pccck );
+          a_v_series[5].push_back( o );
+          a_v_series[6].push_back( pcc_ow );
         }
       }
       #pragma omp barrier

@@ -47,6 +47,7 @@ int main( int argc, char** argv) {
   sim.Run(t_init, -1);
   auto res = sim.Run(t_max, t_measure_interval);
 
+  /*
   std::ofstream fout("_output.json");
   fout << "{\n"
        << "  \"degree\": "    << res[0] << ",\n"
@@ -59,6 +60,7 @@ int main( int argc, char** argv) {
        << "}" << std::endl;
   fout.flush();
   fout.close();
+   */
 
   std::ofstream eout("net.edg");
   sim.PrintEdge(eout);
