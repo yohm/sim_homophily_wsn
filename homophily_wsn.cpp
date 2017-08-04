@@ -173,7 +173,8 @@ void HomophilyWSN::GA() {
     double r = Random::Rand01(thread_num);
     if( ni->Degree() == 0 || r < m_p_jump ) {
       if( ni->Degree() == m_net_size - 1 ) { continue; }
-      Node* nj = RandomSelectNodeSharingTraitExcludingNeighbors(ni);
+      size_t f = static_cast<size_t>( m_F * Random::Rand01(thread_num) );
+      Node* nj = RandomSelectNodeSharingTraitExcludingNeighbors(ni,f);
       assert( ni->FindEdge(nj) == NULL );
       AttachPair(ni, nj, local_attachements);
     }
@@ -335,13 +336,11 @@ void HomophilyWSN::LinkAging() {
   }
 }
 
-Node* HomophilyWSN::RandomSelectNodeSharingTraitExcludingNeighbors(Node *ni) {
+Node* HomophilyWSN::RandomSelectNodeSharingTraitExcludingNeighbors(Node *ni, size_t f) {
   std::set<size_t> candidates;
-  for( size_t f=0; f<m_F; f++) {
-    size_t t = ni->TraitAt(f);
-    const auto& v = m_mapTraitsNodes[ std::make_pair(f,t) ];
-    candidates.insert( v.begin(), v.end() );
-  }
+  size_t t = ni->TraitAt(f);
+  const auto& v = m_mapTraitsNodes[ std::make_pair(f,t) ];
+  candidates.insert( v.begin(), v.end() );
   candidates.erase( ni->GetId() );
   for( const Edge& e : ni->GetEdges() ) {
     candidates.erase( e.node->GetId() );
