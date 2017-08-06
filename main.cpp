@@ -24,7 +24,6 @@ int main( int argc, char** argv) {
   double aging  = 1.0; // std::atof( argv[7] );
   double w_th   = 0.01; //std::atof( argv[8] );
 
-  long t_init = static_cast<long> (t_max * 0.2);
   long t_measure_interval = 512;
   std::cerr << "Lists of given parameters are as follows:" << std::endl
             << "net_size:\t" << net_size << std::endl
@@ -37,14 +36,12 @@ int main( int argc, char** argv) {
             //<< "w_th:\t" << w_th << std::endl
             << "F:\t" << F << std::endl
             << "q:\t" << q << std::endl
-            << "t_init:\t" << t_init << std::endl
             << "t_max:\t" << t_max << std::endl
             << "t_measure_interval:\t" << t_measure_interval << std::endl
             << "seed:\t" << seed << std::endl;
 
   HomophilyWSN sim(seed, net_size, p_tri, p_jump, delta,
                    p_nd, p_ld, aging, w_th, F, q);
-  sim.Run(t_init, -1);
   auto res = sim.Run(t_max, t_measure_interval);
 
   /*
