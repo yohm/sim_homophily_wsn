@@ -63,7 +63,7 @@ protected:
   void LinkAging();
   void NodeDeletion();
   void DeleteNode(Node* ni);
-  Node* RandomSelectNodeSharingTraitExcludingNeighbors(Node *i, size_t f);
+  Node* RandomSelectNodeSharingTrait(Node *i, size_t f);
 
   // non-copyable
   HomophilyWSN(const HomophilyWSN&);
