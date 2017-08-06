@@ -197,19 +197,18 @@ void HomophilyWSN::LA() {
   const size_t size = m_nodes.size();
   #pragma omp for schedule(static)
   for( size_t i=0; i < size; ++i) {
+    size_t f = (size_t) (m_F * Random::Rand01(thread_num)); // f'th trait is used
     // search first child
     Node* ni = &m_nodes[i];
     if( ni->Degree() == 0 ) { continue; }
-    Edge* e_ij = ni->EdgeSelection(NULL);
+    Edge* e_ij = ni->EdgeSelectionSharingTrait(NULL,f);
+    if( e_ij == NULL ) { continue; }
     Node* nj = e_ij->node;
     EnhancePair(ni, nj, local_enhancements);
 
     // search second child
     if( nj->Degree() == 1 ) { continue; }
     auto shared_traits = ni->sharedTraits(nj);
-    assert( shared_traits.size() > 0 );
-    int r = (int) (shared_traits.size() * Random::Rand01(omp_get_thread_num() ));
-    size_t f = shared_traits[r];
     Edge* e_jk = nj->EdgeSelectionSharingTrait(ni,f);
     if( e_jk == NULL ) { continue; }
     Node* nk = e_jk->node;
