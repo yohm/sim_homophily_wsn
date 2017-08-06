@@ -175,6 +175,7 @@ void HomophilyWSN::GA() {
       if( ni->Degree() == m_net_size - 1 ) { continue; }
       size_t f = static_cast<size_t>( m_F * Random::Rand01(thread_num) );
       Node* nj = RandomSelectNodeSharingTraitExcludingNeighbors(ni,f);
+      if( nj == NULL ) { continue;}
       assert( ni->FindEdge(nj) == NULL );
       AttachPair(ni, nj, local_attachements);
     }
