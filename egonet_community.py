@@ -12,16 +12,18 @@ infile = sys.argv[1]
 g=nx.read_weighted_edgelist( infile, nodetype=int )
 
 ego = int(sys.argv[2])
-ego_net = nx.ego_graph(g, ego )
+ego_net = nx.ego_graph(g, ego)
+ego_net.remove_node(ego)
 
 def findCommunities(G):
-    infomapWrapper = infomap.Infomap("--two-level")
+    infomapWrapper = infomap.Infomap("-2")
     print("Building Infomap network from a NetworkX graph...")
     mapping = {}
     for n in G.nodes():
         mapping[n] = len(mapping)
     G2 = nx.relabel_nodes(G, mapping, copy=True)
     for e in G2.edges_iter(data='weight'):
+    #for e in G2.edges_iter(data='weight'):
         infomapWrapper.addLink(*e)
 
     print("Find communities with Infomap...")
@@ -37,15 +39,16 @@ def findCommunities(G):
         n = node.originalLeafIndex
         org_idx = inverse_mapping[n]
         communities[org_idx] = node.moduleIndex()
+    for n in G.nodes():
+        if not n in communities:
+            communities[n] = -1
     nx.set_node_attributes(G, 'community', communities)
     return G
 
 def drawNetwork(G):
     # position map
     pos = nx.spring_layout(G, weight=None)
-    #pos = nx.spring_layout(G)
-    # community ids
-    communities = [v for k,v in nx.get_node_attributes(G, 'community').items()]
+    communities = [ n[1]['community'] for n in G.nodes(data='community') ]
     numCommunities = max(communities) + 1
 
     # edges
