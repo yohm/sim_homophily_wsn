@@ -1,5 +1,5 @@
 import sys
-import math
+import math,json
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -87,14 +87,25 @@ if len(sys.argv) == 3:
         findCommunities(ego_net)
         drawNetwork(ego_net)
 else:
-    total = 0.0
+    histo = {}
     count = 0
     for n in g.nodes():
         if g.degree(n) == 0:
             continue
-        total += numCommunitiesEgoCentricNetwork(g,n)
+        num_com = numCommunitiesEgoCentricNetwork(g,n)
+        histo[num_com] = histo.get(num_com,0) + 1
         count += 1
         if count % 1000 == 0:
             eprint(count)
-    print(total/count)
+    if sum( histo.values() ) != count:
+        raise Exception("must not happen")
+    total = sum( [ k*v for k,v in histo.items() ] )
+    avg = float(total)/count
+    print( json.dumps( {"NumEgoCommunities": avg}, indent=2 ) )
+
+    io = open("num_egocom_histo.dat", 'w')
+    for k in sorted( histo.keys() ):
+        io.write("%d %d\n" % (k, histo[k]) )
+    io.flush()
+    io.close()
 
