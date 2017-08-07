@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import infomap
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 def findCommunities(G):
-    infomapWrapper = infomap.Infomap("-2")
+    infomapWrapper = infomap.Infomap("-2 -s 1234 --silent")
     mapping = {}
     for n in sorted( G.nodes(), key=lambda x: G.degree(x) ):
         mapping[n] = len(mapping)
@@ -17,6 +20,7 @@ def findCommunities(G):
     infomapWrapper.run();
     
     tree = infomapWrapper.tree
+    #eprint("Found %d top modules with codelength: %f" % (tree.numTopModules(), tree.codelength()))
     
     inverse_mapping = { v:k for k,v in mapping.items() }
     communities = {}
@@ -29,6 +33,14 @@ def findCommunities(G):
             communities[n] = -1
     nx.set_node_attributes(G, 'community', communities)
     return tree.numTopModules()
+
+def numCommunitiesEgoCentricNetwork(G, ego):
+    ego_net = nx.ego_graph(G,n)
+    ego_net.remove_node(ego)
+    if len(ego_net.edges()) == 0:
+        return len(ego_net.nodes())
+    else:
+        return findCommunities(ego_net)
 
 def drawNetwork(G):
     # position map
@@ -59,17 +71,30 @@ def drawNetwork(G):
     plt.axis('off')
     plt.show()
 
-if len(sys.argv) != 2:
-    print("usage: python egonet_community.py net.edg 1")
+if len(sys.argv) != 2 and len(sys.argv) != 3:
+    eprint("usage: python egonet_community.py net.edg [node_idx]")
 
 infile = sys.argv[1]
 g=nx.read_weighted_edgelist( infile, nodetype=int )
 
-ego = int(sys.argv[2])
-ego_net = nx.ego_graph(g, ego)
-ego_net.remove_node(ego)
-
-
-findCommunities(ego_net)
-drawNetwork(ego_net)
+if len(sys.argv) == 3:
+    ego = int(sys.argv[2])
+    ego_net = nx.ego_graph(g, ego)
+    if len( ego_net.edges() ) == 0:
+        eprint("no links between neighbors")
+    else:
+        ego_net.remove_node(ego)
+        findCommunities(ego_net)
+        drawNetwork(ego_net)
+else:
+    total = 0.0
+    count = 0
+    for n in g.nodes():
+        if g.degree(n) == 0:
+            continue
+        total += numCommunitiesEgoCentricNetwork(g,n)
+        count += 1
+        if count % 1000 == 0:
+            eprint(count)
+    print(total/count)
 
