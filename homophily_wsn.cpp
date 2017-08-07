@@ -171,10 +171,9 @@ void HomophilyWSN::GA() {
   #pragma omp for schedule(static)
   for( size_t i = 0; i < size; ++i) {
     Node * ni = &m_nodes[i];
+    size_t f = static_cast<size_t>( m_F * Random::Rand01(thread_num) );
     double r = Random::Rand01(thread_num);
-    if( ni->Degree() == 0 || r < m_p_jump ) {
-      if( ni->Degree() == m_net_size - 1 ) { continue; }
-      size_t f = static_cast<size_t>( m_F * Random::Rand01(thread_num) );
+    if( ni->DegreeAtTrait(f) == 0 || r < m_p_jump ) {
       Node* nj = RandomSelectNodeSharingTrait(ni,f);
       if( nj == NULL ) { continue;}
       if( ni->FindEdge(nj) == NULL ) {

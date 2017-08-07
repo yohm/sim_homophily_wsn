@@ -34,6 +34,7 @@ public:
   Edge* EdgeSelection(Node* excluded_node);
   Edge* EdgeSelectionSharingTrait(Node* excluded_node, size_t f);
   size_t Degree() const { return m_edges.size(); }
+  size_t DegreeAtTrait(size_t f) const;
   double Strength() const;
   double LocalCC() const;
   Edge* FindEdge(Node* nj);  // return the pointer to edge. If not found, return NULL;

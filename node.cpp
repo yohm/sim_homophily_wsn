@@ -136,3 +136,12 @@ std::vector<size_t> Node::sharedTraits(const Node* n) {
   return std::move(shared);
 }
 
+size_t Node::DegreeAtTrait(size_t f) const {
+  size_t my_trait = TraitAt(f);
+  size_t count = 0;
+  for( const Edge& e: m_edges ) {
+    if( e.node->TraitAt(f) == my_trait ) { count++; }
+  }
+  return count;
+}
+
