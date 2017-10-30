@@ -5,8 +5,8 @@
 
 int main( int argc, char** argv) {
 
-  if( argc != 9 ) {
-    std::cerr << "Usage : ./main.out <N> <p_tri> <p_jump> <p_ld> <F> <q> <t_max> <seed>" << std::endl;
+  if( argc != 11 ) {
+    std::cerr << "Usage : ./main.out <N> <p_tri> <p_jump> <p_ld> <aging> <w_th> <F> <q> <t_max> <seed>" << std::endl;
     std::cerr << argc << std::endl;
     exit(1);
   }
@@ -15,14 +15,14 @@ int main( int argc, char** argv) {
   double p_tri  = std::atof( argv[2] );
   double p_jump = std::atof( argv[3] );
   double p_ld   = std::atof( argv[4] );
-  long F        = std::atol( argv[5] );
-  long q        = std::atol( argv[6] );
-  long t_max    = std::atol( argv[7] );
-  long seed     = std::atol( argv[8] );
+  double aging  = std::atof( argv[5] );
+  double w_th   = std::atof( argv[6] );
+  long F        = std::atol( argv[7] );
+  long q        = std::atol( argv[8] );
+  long t_max    = std::atol( argv[9] );
+  long seed     = std::atol( argv[10] );
   double delta  = 1.0; //std::atof( argv[4] );
   double p_nd   = 0.0; // std::atof( argv[5] );
-  double aging  = 1.0; // std::atof( argv[7] );
-  double w_th   = 0.01; //std::atof( argv[8] );
 
   long t_measure_interval = 512;
   std::cerr << "Lists of given parameters are as follows:" << std::endl
@@ -32,8 +32,8 @@ int main( int argc, char** argv) {
             //<< "delta:\t" << delta << std::endl
             //<< "p_nd:\t" << p_nd << std::endl
             << "p_ld:\t" << p_ld << std::endl
-            //<< "aging:\t" << aging << std::endl
-            //<< "w_th:\t" << w_th << std::endl
+            << "aging:\t" << aging << std::endl
+            << "w_th:\t" << w_th << std::endl
             << "F:\t" << F << std::endl
             << "q:\t" << q << std::endl
             << "t_max:\t" << t_max << std::endl
