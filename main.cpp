@@ -44,6 +44,9 @@ int main( int argc, char** argv) {
                    p_nd, p_ld, aging, w_th, F, q);
   auto res = sim.Run(t_max, t_measure_interval);
 
+  auto counts = sim.AttachCounts();
+  std::cout << "counts: " << std::get<0>(counts) << ", " << std::get<1>(counts) << ", " << std::get<2>(counts) << std::endl;
+
   /*
   std::ofstream fout("_output.json");
   fout << "{\n"

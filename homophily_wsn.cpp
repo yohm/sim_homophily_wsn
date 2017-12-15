@@ -5,7 +5,8 @@ HomophilyWSN::HomophilyWSN(
   uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
   double p_nd, double p_ld, double aging, double w_th, long F, long q)
 : m_seed(seed), m_net_size(net_size), m_p_tri(p_tri), m_p_jump(p_jump), m_delta(delta),
-  m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(q)
+  m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(q),
+  m_ga_count1(0), m_ga_count2(0), m_la_count(0)
 {
   #pragma omp parallel
   {
@@ -166,6 +167,8 @@ void HomophilyWSN::GA() {
   int thread_num = omp_get_thread_num();
   std::vector< std::pair<Node*,Node*> > local_attachements;
   std::vector< std::pair<Node*,Node*> > local_enhancements;
+  long local_ga_count1 = 0;
+  long local_ga_count2 = 0;
 
   const size_t size = m_nodes.size();
   #pragma omp for schedule(static)
@@ -173,11 +176,14 @@ void HomophilyWSN::GA() {
     Node * ni = &m_nodes[i];
     size_t f = static_cast<size_t>( m_F * Random::Rand01(thread_num) );
     double r = Random::Rand01(thread_num);
-    if( ni->DegreeAtTrait(f) == 0 || r < m_p_jump ) {
+    bool no_neighbor = (ni->DegreeAtTrait(f) == 0);
+    if( no_neighbor || r < m_p_jump ) {
       Node* nj = RandomSelectNodeSharingTrait(ni,f);
       if( nj == NULL ) { continue;}
       if( ni->FindEdge(nj) == NULL ) {
         AttachPair(ni, nj, local_attachements);
+        if( no_neighbor ) { local_ga_count1++; }
+        else { local_ga_count2++; }
       }
       else {
         EnhancePair(ni,nj,local_enhancements);
@@ -189,6 +195,8 @@ void HomophilyWSN::GA() {
   {
     m_attachements.insert(m_attachements.end(), local_attachements.begin(), local_attachements.end());
     m_enhancements.insert(m_enhancements.end(), local_enhancements.begin(), local_enhancements.end());
+    m_ga_count1 += local_ga_count1;
+    m_ga_count2 += local_ga_count2;
   }
   #pragma omp barrier
 }
@@ -198,6 +206,7 @@ void HomophilyWSN::LA() {
   int thread_num = omp_get_thread_num();
   std::vector< std::pair<Node*,Node*> > local_enhancements;
   std::vector< std::pair<Node*,Node*> > local_attachements;
+  long local_la_count = 0;
 
   const size_t size = m_nodes.size();
   #pragma omp for schedule(static)
@@ -231,6 +240,7 @@ void HomophilyWSN::LA() {
 
   #pragma omp critical
   {
+    m_la_count += local_attachements.size();
     m_enhancements.insert(m_enhancements.end(), local_enhancements.begin(), local_enhancements.end());
     m_attachements.insert(m_attachements.end(), local_attachements.begin(), local_attachements.end());
   }
