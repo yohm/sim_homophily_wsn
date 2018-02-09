@@ -115,6 +115,7 @@ end
 
 if __FILE__ == $0
   n = NetworkTrait.load_from_dir(ARGV[0])
+  f = JSON.parse(File.open('_input.json').read)['simulation_parameters']['F']
   histo = Hash.new(0)
   n.net.for_each_link do |n1,n2,w|
     t1 = n.traits[n1]
@@ -124,9 +125,12 @@ if __FILE__ == $0
   end
   sum = histo.values.inject(:+)
   histo.each_pair {|k,v| histo[k] = v.to_f/sum }
-  sorted = histo.sort_by {|k,v| k}
+  avg = histo.map {|k,v| k*v}.inject(:+)
+  File.open('_output.json','w') {|io| JSON.dump({overlap:avg,overlap_ratio:avg/f},io)}
+  keys = (1..f).to_a
+  values = keys.map {|k| histo[k]}
   require 'pycall'
   plt = PyCall.import_module('matplotlib.pyplot')
-  plt.plot(sorted.map{|x|x[0]}, sorted.map{|x|x[1]})
+  plt.plot(keys, values)
   plt.savefig("overlap_distribution.png")
 end
