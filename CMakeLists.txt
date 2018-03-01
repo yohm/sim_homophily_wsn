@@ -21,9 +21,14 @@ set(SOURCE_FILES
   random.hpp
   homophily_wsn.cpp
   homophily_wsn.hpp
-  main.cpp
   )
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-add_executable(wsn.out ${SOURCE_FILES})
+add_executable(homophily_wsn.out main.cpp ${SOURCE_FILES})
 
+set(SOURCE_FILES2
+        spreading/NetSpreading.cpp
+        spreading/NetSpreading.hpp
+        spreading/spreading_main.cpp
+        )
+add_executable(spreading_main.out ${SOURCE_FILES2})
