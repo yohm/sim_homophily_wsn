@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <set>
 #include "NetSpreading.hpp"
 
 NetSpreading::NetSpreading(long N) {
@@ -31,7 +32,7 @@ void NetSpreading::RunSpreading(long seed) {
 
   while(true) {
     event_t next_event = m_events.PopNextEvent();
-    std::cerr << m_t << ' ' << m_events.Size() << std::endl;
+    // std::cerr << m_t << ' ' << m_events.Size() << std::endl;
     double t = next_event.first;
     if(t < 0) { break; }
     m_t = t;
@@ -41,11 +42,18 @@ void NetSpreading::RunSpreading(long seed) {
     m_nodes[j].SetInfected(m_t);
     m_nodes[j].CalcEventsAndPush(*this);
   }
+}
 
-  /*
-  for( const auto& n: m_nodes ) {
-    std::cerr << n.id << ' ' << n.infected_at << std::endl;
+void NetSpreading::PrintInfections() const {
+  std::set<double> infections;
+  for(const auto& n: m_nodes) {
+    infections.insert(n.infected_at);
   }
-   */
+  long n = 0;
+  for(auto t: infections) {
+    std::cout << t << ' ' << n << std::endl;
+    n++;
+  }
+
 }
 

@@ -37,6 +37,7 @@ public:
   NetSpreading(long N);
   void LoadFile(const char* edg_file);
   void RunSpreading(long seed);
+  void PrintInfections() const;
 private:
   double m_t; //time
   std::mt19937 m_random;

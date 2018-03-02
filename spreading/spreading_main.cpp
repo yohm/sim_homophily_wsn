@@ -15,6 +15,7 @@ int main( int argc, char** argv) {
   NetSpreading n(std::atol(argv[1]));
   n.LoadFile(argv[2]);
   n.RunSpreading(std::atol(argv[3]));
+  n.PrintInfections();
 
   return 0;
 }
