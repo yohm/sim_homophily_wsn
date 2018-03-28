@@ -51,8 +51,10 @@ void NetSpreading::PrintInfections() const {
   }
   long n = 0;
   for(auto t: infections) {
-    std::cout << t << ' ' << n << std::endl;
-    n++;
+    if( t >= 0 ) {
+      std::cout << t << ' ' << n << std::endl;
+      n++;
+    }
   }
 
 }
