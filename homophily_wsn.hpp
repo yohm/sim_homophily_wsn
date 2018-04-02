@@ -25,6 +25,10 @@ public:
     uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
     double p_nd, double p_ld, double aging, double w_th, long F, long q
   );
+  HomophilyWSN(
+      uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
+      double p_nd, double p_ld, double aging, double w_th, long F, const std::vector<long>& qs
+  );
   ~HomophilyWSN() {};
   std::array<double,NUM_OUTPUTS> Run( uint32_t tmax, long measure_interval);
   void PrintEdge( std::ofstream& fout);
@@ -46,6 +50,7 @@ protected:
   const double m_link_th;
   const long m_F;
   const long m_q;
+  std::vector<long> m_qs;
 
   // state variables
   std::vector<Node> m_nodes;

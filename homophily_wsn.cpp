@@ -26,6 +26,36 @@ HomophilyWSN::HomophilyWSN(
         m_nodes.push_back( node );
       }
       ConstructMapTraitsNodes();
+      for(long i=0; i<F; i++) { m_qs.push_back(q); }
+    }
+  }
+}
+
+HomophilyWSN::HomophilyWSN(
+    uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
+    double p_nd, double p_ld, double aging, double w_th, long F, const std::vector<long>& qs)
+  : m_seed(seed), m_net_size(net_size), m_p_tri(p_tri), m_p_jump(p_jump), m_delta(delta),
+      m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(qs[0]), m_qs(qs),
+      m_ga_count1(0), m_ga_count2(0), m_la_count(0)
+{
+#pragma omp parallel
+  {
+    int num_threads = omp_get_num_threads();
+#pragma omp master
+    {
+      std::cerr << "num_threads: " << num_threads << std::endl;
+      Random::Init(seed, num_threads);
+      int thread_num = omp_get_thread_num();
+      for( size_t i = 0; i < m_net_size; i++) {
+        std::vector<size_t> traits;
+        for( size_t f=0; f < m_F; f++) {
+          size_t trait = static_cast<size_t>(qs[f] * Random::Rand01(thread_num));
+          traits.push_back(trait);
+        }
+        Node node(i, traits);
+        m_nodes.push_back( node );
+      }
+      ConstructMapTraitsNodes();
     }
   }
 }
