@@ -24,9 +24,9 @@ set(SOURCE_FILES
   )
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-add_executable(homophily_wsn.out main.cpp ${SOURCE_FILES})
+add_executable(wsn.out main.cpp ${SOURCE_FILES})
 
-add_executable(homophily_wsn_different_q.out main_different_q.cpp ${SOURCE_FILES})
+add_executable(wsn_different_q.out main_different_q.cpp ${SOURCE_FILES})
 
 set(SOURCE_FILES2
         spreading/NetSpreading.cpp
