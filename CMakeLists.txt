@@ -2,17 +2,13 @@ cmake_minimum_required(VERSION 3.7)
 
 project(homophily_wsn)
 
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
-    include_directories(SYSTEM /usr/local/opt/llvm/include)
-    link_directories(/usr/local/opt/llvm/lib)
-endif()
 if(DEFINED ENV{K})
 	set(CMAKE_CXX_COMPILER FCCpx)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Kfast -Xg")
 endif()
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(SOURCE_FILES
   node.cpp
@@ -23,10 +19,13 @@ set(SOURCE_FILES
   homophily_wsn.hpp
   )
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+find_package(OpenMP)
+
 add_executable(wsn.out main.cpp ${SOURCE_FILES})
+target_link_libraries(wsn.out PUBLIC OpenMP::OpenMP_CXX)
 
 add_executable(wsn_different_q.out main_different_q.cpp ${SOURCE_FILES})
+target_link_libraries(wsn_different_q.out PUBLIC OpenMP::OpenMP_CXX)
 
 set(SOURCE_FILES2
         spreading/NetSpreading.cpp
