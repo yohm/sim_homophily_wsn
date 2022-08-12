@@ -23,16 +23,17 @@ public:
   static const size_t NUM_OUTPUTS = 7;
   HomophilyWSN(
     uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
-    double p_nd, double p_ld, double aging, double w_th, long F, long q
+    double p_nd, double p_ld, double aging, double w_th, long F, long q, double N_g, double w_k
   );
   HomophilyWSN(
       uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
-      double p_nd, double p_ld, double aging, double w_th, long F, const std::vector<long>& qs
+      double p_nd, double p_ld, double aging, double w_th, long F, const std::vector<long>& qs, double N_g, double w_k
   );
   ~HomophilyWSN() {};
   std::array<double,NUM_OUTPUTS> Run( uint32_t tmax, long measure_interval);
   void PrintEdge( std::ofstream& fout);
   void PrintTraits( std::ofstream& fout);
+  void PrintFamily( std::ofstream& fout);
   void ToJson( std::ostream & out ) const;
   double AverageDegree();
   double AverageStrength();
@@ -50,6 +51,8 @@ protected:
   const double m_link_th;
   const long m_F;
   const long m_q;
+  const double m_Ng;
+  const double m_w_k;
   std::vector<long> m_qs;
 
   // state variables
@@ -59,6 +62,8 @@ protected:
   std::map< std::pair<size_t,size_t>, std::vector<size_t> > m_mapTraitsNodes;
   long m_ga_count1, m_ga_count2, m_la_count;
 
+  void FormKinLinks();
+  std::vector<long> AssignFamilyIDs();
   void ConstructMapTraitsNodes();
   void LocalAndGlobalAttachement(); // LA and GA
   void LA();

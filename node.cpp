@@ -97,6 +97,7 @@ void Node::DeleteEdge(Node* nj) {
 
 void Node::AgingEdge(double aging_factor, double threshold) {
   for( Edge& e : m_edges ) {
+    if (m_family == e.node->GetFamilyId()) continue;
     e.weight *= aging_factor;
   }
   auto isLessThanThreshold = [threshold]( const Edge& e ) {

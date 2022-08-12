@@ -3,9 +3,9 @@
 
 HomophilyWSN::HomophilyWSN(
   uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
-  double p_nd, double p_ld, double aging, double w_th, long F, long q)
+  double p_nd, double p_ld, double aging, double w_th, long F, long q, double N_g, double w_k)
 : m_seed(seed), m_net_size(net_size), m_p_tri(p_tri), m_p_jump(p_jump), m_delta(delta),
-  m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(q),
+  m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(q), m_Ng(N_g), m_w_k(w_k),
   m_ga_count1(0), m_ga_count2(0), m_la_count(0)
 {
   #pragma omp parallel
@@ -16,46 +16,83 @@ HomophilyWSN::HomophilyWSN(
       std::cerr << "num_threads: " << num_threads << std::endl;
       Random::Init(seed, num_threads);
       int thread_num = omp_get_thread_num();
+      auto family_ids = AssignFamilyIDs();
       for( size_t i = 0; i < m_net_size; i++) {
         std::vector<size_t> traits;
         for( size_t f=0; f < m_F; f++) {
           size_t trait = static_cast<size_t>(q * Random::Rand01(thread_num));
           traits.push_back(trait);
         }
-        Node node(i, traits);
+        Node node(i, traits, family_ids[i]);
         m_nodes.push_back( node );
       }
       ConstructMapTraitsNodes();
       for(long i=0; i<F; i++) { m_qs.push_back(q); }
     }
   }
+  FormKinLinks();
 }
 
 HomophilyWSN::HomophilyWSN(
     uint64_t seed, size_t net_size, double p_tri, double p_jump, double delta,
-    double p_nd, double p_ld, double aging, double w_th, long F, const std::vector<long>& qs)
+    double p_nd, double p_ld, double aging, double w_th, long F, const std::vector<long>& qs, double N_g, double w_k)
   : m_seed(seed), m_net_size(net_size), m_p_tri(p_tri), m_p_jump(p_jump), m_delta(delta),
-      m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(qs[0]), m_qs(qs),
+      m_p_nd(p_nd), m_p_ld(p_ld), m_aging(aging), m_link_th(w_th), m_F(F), m_q(qs[0]), m_qs(qs), m_Ng(N_g), m_w_k(w_k),
       m_ga_count1(0), m_ga_count2(0), m_la_count(0)
 {
-#pragma omp parallel
+  #pragma omp parallel
   {
     int num_threads = omp_get_num_threads();
-#pragma omp master
+    #pragma omp master
     {
       std::cerr << "num_threads: " << num_threads << std::endl;
       Random::Init(seed, num_threads);
       int thread_num = omp_get_thread_num();
+      auto family_ids = AssignFamilyIDs();
       for( size_t i = 0; i < m_net_size; i++) {
         std::vector<size_t> traits;
         for( size_t f=0; f < m_F; f++) {
           size_t trait = static_cast<size_t>(qs[f] * Random::Rand01(thread_num));
           traits.push_back(trait);
         }
-        Node node(i, traits);
+        Node node(i, traits, family_ids[i]);
         m_nodes.push_back( node );
       }
       ConstructMapTraitsNodes();
+    }
+  }
+  FormKinLinks();
+}
+
+std::vector<long> HomophilyWSN::AssignFamilyIDs() {
+  size_t N = m_net_size;
+  int t = omp_get_thread_num();
+  std::vector<long> ids(N, -1);
+  double num_remaining = static_cast<double>(N);
+  for (size_t i = 0; i < N; i++) {
+    if (ids[i] >= 0) continue;
+    ids[i] = i;
+    num_remaining--;
+    double prob = m_Ng / num_remaining;
+    for (size_t j = i + 1; j < N; j++) {
+      if (ids[j] == -1) {
+        if (Random::Rand01(t) < prob) {
+          ids[j] = ids[i];
+          num_remaining--;
+        }
+      }
+    }
+  }
+  return ids;
+}
+
+void HomophilyWSN::FormKinLinks() {
+  for (size_t i = 0; i < m_net_size; i++) {
+    for (size_t j = i + 1; j < m_net_size; j++) {
+      if (m_nodes[i].GetFamilyId() == m_nodes[j].GetFamilyId()) {
+        m_nodes[i].AddEdge(&m_nodes[j], m_w_k);
+        m_nodes[j].AddEdge(&m_nodes[i], m_w_k);
+      }
     }
   }
 }
@@ -67,7 +104,7 @@ void HomophilyWSN::ConstructMapTraitsNodes() {
       m_mapTraitsNodes[ std::make_pair(f,t) ].push_back(i);
     }
   }
-};
+}
 
 std::array<double,HomophilyWSN::NUM_OUTPUTS> HomophilyWSN::Run( uint32_t t_max, long measure_interval ) {
   const bool measure_time_series = (0 < measure_interval);
@@ -145,6 +182,13 @@ void HomophilyWSN::PrintTraits(std::ofstream &fout) {
       fout << n.TraitAt(f) << ' ';
     }
     fout << "\n";
+  }
+  fout.flush();
+}
+
+void HomophilyWSN::PrintFamily(std::ofstream &fout) {
+  for( const Node& n : m_nodes ) {
+    fout << n.GetFamilyId() << '\n';
   }
   fout.flush();
 }
@@ -298,6 +342,9 @@ void HomophilyWSN::LinkDeletion() {
       size_t i = pair.first;
       const std::vector<size_t> &jList = pair.second;
       for( size_t j : jList ) {
+        if (m_nodes[i].GetFamilyId() == m_nodes[j].GetFamilyId()) { // we do not remove kin links
+          continue;
+        }
         m_nodes[i].DeleteEdge( &m_nodes[j] );
       }
     }
@@ -340,6 +387,7 @@ void HomophilyWSN::StrengthenEdges() {
     Node* nj = pair.second;
     assert( ni->FindEdge(nj) == NULL );
     assert( nj->FindEdge(ni) == NULL );
+    assert( ni->GetFamilyId() != nj->GetFamilyId() );
     const double w_0 = 1.0;
     ni->AddEdge(nj, w_0);
     nj->AddEdge(ni, w_0);
@@ -352,6 +400,9 @@ void HomophilyWSN::StrengthenEdges() {
   for( size_t idx = 0; idx < en_size; idx++) {
     Node* ni = m_enhancements[idx].first;
     Node* nj = m_enhancements[idx].second;
+    if (ni->GetFamilyId() == nj->GetFamilyId()) {
+      continue;
+    }
     ni->EnhanceEdge(nj, m_delta);
     nj->EnhanceEdge(ni, m_delta);
   }

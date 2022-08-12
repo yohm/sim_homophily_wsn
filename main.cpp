@@ -5,8 +5,8 @@
 
 int main( int argc, char** argv) {
 
-  if( argc != 12 ) {
-    std::cerr << "Usage : ./main.out <N> <p_tri> <p_jump> <p_ld> <aging> <w_th> <delta> <F> <q> <t_max> <seed>" << std::endl;
+  if( argc != 14 ) {
+    std::cerr << "Usage : ./main.out <N> <p_tri> <p_jump> <p_ld> <aging> <w_th> <delta> <F> <q> <N_g> <w_k> <t_max> <seed>" << std::endl;
     std::cerr << argc << std::endl;
     exit(1);
   }
@@ -20,8 +20,10 @@ int main( int argc, char** argv) {
   double delta  = std::atof( argv[7] ); // 1.0; //std::atof( argv[4] );
   long F        = std::atol( argv[8] );
   long q        = std::atol( argv[9] );
-  long t_max    = std::atol( argv[10] );
-  long seed     = std::atol( argv[11] );
+  double N_g    = std::atof( argv[10] );
+  double w_k    = std::atof( argv[11] );
+  long t_max    = std::atol( argv[12] );
+  long seed     = std::atol( argv[13] );
   double p_nd   = 0.0; // std::atof( argv[5] );
 
   long t_measure_interval = 512;
@@ -36,12 +38,14 @@ int main( int argc, char** argv) {
             << "delta:\t" << delta << std::endl
             << "F:\t" << F << std::endl
             << "q:\t" << q << std::endl
+            << "N_g:\t" << N_g << std::endl
+            << "w_k:\t" << w_k << std::endl
             << "t_max:\t" << t_max << std::endl
             << "t_measure_interval:\t" << t_measure_interval << std::endl
             << "seed:\t" << seed << std::endl;
 
   HomophilyWSN sim(seed, net_size, p_tri, p_jump, delta,
-                   p_nd, p_ld, aging, w_th, F, q);
+                   p_nd, p_ld, aging, w_th, F, q, N_g, w_k);
   auto res = sim.Run(t_max, t_measure_interval);
 
   auto counts = sim.AttachCounts();
@@ -69,6 +73,10 @@ int main( int argc, char** argv) {
   std::ofstream tout("traits.txt");
   sim.PrintTraits(tout);
   tout.close();
+
+  std::ofstream fout("families.txt");
+  sim.PrintFamily(fout);
+  fout.close();
 
   return 0;
 }

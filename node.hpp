@@ -24,8 +24,9 @@ public:
 //=================================================
 class Node {
 public:
-  Node(size_t id, std::vector<size_t> traits) : m_id(id), m_traits(traits) {};
+  Node(size_t id, std::vector<size_t> traits, size_t family) : m_id(id), m_family(family), m_traits(traits) {};
   size_t GetId() const { return m_id; }
+  size_t GetFamilyId() const { return m_family; }
   size_t TraitAt(size_t f) const { return m_traits[f]; }
 
   // randomly select edge with the probability proportional to its weight
@@ -47,7 +48,7 @@ public:
   void SortEdgesByID();
   std::vector<size_t> sharedTraits( const Node* n );
 protected:
-  size_t m_id;
+  size_t m_id, m_family;
   std::vector<size_t> m_traits;
   std::vector<Edge> m_edges;
 };
