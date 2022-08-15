@@ -513,3 +513,26 @@ double HomophilyWSN::LocalOverlap(const Node &ni, const Node &nj) const {
   return static_cast<double>(num_common)/(ki+kj-2-num_common);
 }
 
+double HomophilyWSN::FeatureOverlap() const {
+  // calculate the feature overlap between all connected nodes
+  double total_feature_overlap = 0.0;
+  size_t total_count = 0;
+  for( size_t i=0; i<m_net_size; i++ ) {
+    for( const Edge& e : m_nodes[i].GetEdges() ) {
+      const size_t j = e.node->GetId();
+      if( j > i ) {
+        const Node& ni = m_nodes[i];
+        const Node& nj = m_nodes[j];
+        size_t overlap_count = 0;
+        for (size_t f = 0; f < m_F; f++) {
+          if (ni.TraitAt(f) == nj.TraitAt(f)) {
+            overlap_count++;
+          }
+        }
+        total_feature_overlap += static_cast<double>(overlap_count) / m_F;
+        total_count++;
+      }
+    }
+  }
+  return total_feature_overlap / total_count;
+}

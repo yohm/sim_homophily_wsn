@@ -37,6 +37,7 @@ public:
   double AverageDegree();
   double AverageStrength();
   std::tuple<long,long,long> AttachCounts() const { return std::make_tuple(m_ga_count1,m_ga_count2,m_la_count); };
+  double FeatureOverlap() const;
 protected:
   // parameters
   const uint64_t m_seed;

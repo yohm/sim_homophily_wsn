@@ -13,5 +13,6 @@ time $SCRIPT_DIR/wsn.out $1 $2 $3 $4 1.0 0.1 $8 $5 $6 $7 $9
 
 $SCRIPT_DIR/network_analysis/run.sh net.edg
 $SCRIPT_DIR/network_analysis/plot/plot_all.sh .
-python $SCRIPT_DIR/plot_timeseries.py timeseries.dat
-
+export PIPENV_PIPFILE=${SCRIPT_DIR}/Pipfile
+pipenv run python $SCRIPT_DIR/plot_timeseries.py timeseries.dat
+pipenv run python $SCRIPT_DIR/merge_feature_overlap.py traits.txt _output.json

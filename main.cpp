@@ -67,6 +67,7 @@ int main( int argc, char** argv) {
   eout.close();
 
   std::ofstream tout("traits.txt");
+  tout << sim.FeatureOverlap() << std::endl;
   sim.PrintTraits(tout);
   tout.close();
 
